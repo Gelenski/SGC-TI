@@ -1,6 +1,10 @@
 import uuid
 from helpdesk.domain.models import Usuario, Perfil
-from helpdesk.domain.exceptions import EmailJaCadastradoException, NegocioException
+from helpdesk.domain.exceptions import (
+    EmailJaCadastradoException,
+    CredenciaisInvalidasException,
+    NegocioException,
+)
 from helpdesk.repositories.repositories import UsuarioRepositoryEmMemoria
 
 class AutenticacaoService:
@@ -8,7 +12,6 @@ class AutenticacaoService:
         self.repo = repo
 
     def cadastrar(self, nome: str, email: str, senha: str) -> Usuario:
-        # Validação defensiva de campos em branco
         if not nome or not nome.strip():
             raise NegocioException("Nome é um campo obrigatório")
         if not email or not email.strip():
@@ -18,7 +21,6 @@ class AutenticacaoService:
 
         email_normalizado = email.strip().lower()
 
-        # Verificação de duplicidade com e-mail normalizado
         if self.repo.buscar_por_email(email_normalizado):
             raise EmailJaCadastradoException("E-mail já cadastrado no sistema")
 
@@ -31,3 +33,15 @@ class AutenticacaoService:
         )
 
         return self.repo.salvar(novo_usuario)
+
+    def autenticar(self, email: str, senha: str) -> Usuario:
+        if not email or not email.strip() or not senha or not senha.strip():
+            raise CredenciaisInvalidasException("Credenciais inválidas")
+
+        email_normalizado = email.strip().lower()
+        usuario = self.repo.buscar_por_email(email_normalizado)
+
+        if not usuario or usuario.senha != senha:
+            raise CredenciaisInvalidasException("Credenciais inválidas")
+
+        return usuario

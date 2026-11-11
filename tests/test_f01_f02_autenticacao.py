@@ -3,6 +3,7 @@ from helpdesk.domain.models import Perfil, Usuario
 from helpdesk.domain.exceptions import EmailJaCadastradoException
 from helpdesk.repositories.repositories import UsuarioRepositoryEmMemoria
 from helpdesk.services.autenticacao_service import AutenticacaoService
+from helpdesk.domain.exceptions import CredenciaisInvalidasException
 
 class TestCadastroUsuario:
 
@@ -50,3 +51,52 @@ class TestCadastroUsuario:
             self.service.cadastrar("Carlos Silva", email, "Senha@123")
 
         assert str(exc_info.value) == "E-mail já cadastrado no sistema"
+
+class TestLoginUsuario:
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.repo = UsuarioRepositoryEmMemoria()
+        self.service = AutenticacaoService(self.repo)
+
+    def test_login_com_sucesso(self):
+        # Dado que existe um usuário cadastrado
+        email = "ana@empresa.com"
+        senha = "Segredo@123"
+        self.repo.salvar(
+            Usuario(
+                id="user-ana",
+                nome="Ana Souza",
+                email=email,
+                senha=senha,
+                perfil=Perfil.SOLICITANTE,
+            )
+        )
+
+        # Quando eu tento autenticar com as credenciais corretas
+        usuario_autenticado = self.service.autenticar(email, senha)
+
+        # Então a autenticação deve ser realizada com sucesso
+        assert usuario_autenticado is not None
+        assert usuario_autenticado.email == email
+        assert usuario_autenticado.nome == "Ana Souza"
+
+    def test_tentativa_de_login_com_senha_incorreta(self):
+        # Dado que existe um usuário cadastrado
+        email = "ana@empresa.com"
+        self.repo.salvar(
+            Usuario(
+                id="user-ana",
+                nome="Ana Souza",
+                email=email,
+                senha="Segredo@123",
+                perfil=Perfil.SOLICITANTE,
+            )
+        )
+
+        # Quando tento autenticar com senha errada
+        # Então o sistema deve recusar o login e exibir: credenciais inválidas
+        with pytest.raises(CredenciaisInvalidasException) as exc_info:
+            self.service.autenticar(email, "SenhaErrada")
+
+        assert str(exc_info.value) == "Credenciais inválidas"
