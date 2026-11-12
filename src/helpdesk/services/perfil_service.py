@@ -1,22 +1,39 @@
+from typing import Dict, List
+
 from helpdesk.domain.models import Usuario, Perfil
 from helpdesk.domain.exceptions import AcessoNegadoException, NegocioException
 from helpdesk.repositories.repositories import UsuarioRepositoryEmMemoria
+
+MSG_ACESSO_NEGADO_ADMIN = "Acesso negado: permissão de administrador necessária"
+MSG_TIPO_JA_EXISTENTE = "Tipo de usuário já existente"
 
 
 class PerfilService:
     def __init__(self, repo: UsuarioRepositoryEmMemoria):
         self.repo = repo
-        self.tipos = {}
+        self._tipos: Dict[str, str] = {}  # nome do tipo -> descrição
 
-    def cadastrar_tipo_usuario(self, executor: Usuario, nome: str, descricao: str):
-        if executor.perfil != Perfil.ADMIN:
-            raise AcessoNegadoException("Acesso negado: permissão de administrador necessária")
-        if nome in self.tipos:
-            raise NegocioException("Tipo de usuário já existente")
-        self.tipos[nome] = descricao
+    def cadastrar_tipo_usuario(self, executor: Usuario, nome: str, descricao: str) -> None:
+        """F03 - Cadastra um novo tipo de perfil. Somente ADMIN pode executar."""
+        self._garantir_que_e_admin(executor)
+
+        nome_normalizado = self._normalizar(nome)
+        if self.tipo_existe(nome_normalizado):
+            raise NegocioException(MSG_TIPO_JA_EXISTENTE)
+
+        self._tipos[nome_normalizado] = (descricao or "").strip()
 
     def tipo_existe(self, nome: str) -> bool:
-        return nome in self.tipos
+        return self._normalizar(nome) in self._tipos
 
-    def listar_tipos(self):
-        return list(self.tipos.keys())
+    def listar_tipos(self) -> List[str]:
+        return list(self._tipos.keys())
+
+    @staticmethod
+    def _normalizar(nome: str) -> str:
+        return (nome or "").strip().upper()
+
+    @staticmethod
+    def _garantir_que_e_admin(executor: Usuario) -> None:
+        if executor is None or executor.perfil != Perfil.ADMIN:
+            raise AcessoNegadoException(MSG_ACESSO_NEGADO_ADMIN)
