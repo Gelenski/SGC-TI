@@ -58,3 +58,39 @@ class TestCadastrarTipoUsuario:
         # E o sistema deve retornar o erro de permissão
         assert str(exc_info.value) == "Acesso negado: permissão de administrador necessária"
         assert self.service.tipo_existe("GESTOR") is False
+
+class TestAlterarPerfilUsuario:
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.repo = UsuarioRepositoryEmMemoria()
+        self.service = PerfilService(self.repo)
+
+        # E existe um usuário "João" com o perfil "SOLICITANTE"
+        self.repo.salvar(criar_usuario("joao", "João", Perfil.SOLICITANTE))
+
+    def test_administrador_altera_perfil_de_solicitante_para_tecnico(self):
+        # Dado que estou autenticado como "ADMIN"
+        admin = criar_usuario("admin", "Admin", Perfil.ADMIN)
+
+        # Quando eu altero o perfil de "João" para "TECNICO"
+        mensagem = self.service.alterar_perfil(admin, "joao", Perfil.TECNICO)
+
+        # Então o perfil de "João" deve ser atualizado para "TECNICO"
+        assert self.repo.buscar_por_id("joao").perfil == Perfil.TECNICO
+        # E deve ser exibida a mensagem "Perfil atualizado com sucesso"
+        assert mensagem == "Perfil atualizado com sucesso"
+
+    def test_usuario_nao_administrador_tenta_alterar_perfil(self):
+        # Dado que estou autenticado como "SOLICITANTE"
+        solicitante = criar_usuario("sol", "Solicitante", Perfil.SOLICITANTE)
+
+        # Quando tento alterar o perfil de "João" para "ADMIN"
+        # Então a operação deve ser bloqueada
+        with pytest.raises(AcessoNegadoException) as exc_info:
+            self.service.alterar_perfil(solicitante, "joao", Perfil.ADMIN)
+
+        # E o sistema deve retornar erro de permissão
+        assert str(exc_info.value) == "Acesso negado: permissão de administrador necessária"
+        # (o perfil de João não mudou)
+        assert self.repo.buscar_por_id("joao").perfil == Perfil.SOLICITANTE
