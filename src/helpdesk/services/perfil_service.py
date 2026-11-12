@@ -23,6 +23,14 @@ class PerfilService:
 
         self._tipos[nome_normalizado] = (descricao or "").strip()
 
+    def alterar_perfil(self, executor, usuario_id, novo_perfil):
+        if executor.perfil != Perfil.ADMIN:
+            raise AcessoNegadoException("Acesso negado: permissão de administrador necessária")
+        usuario = self.repo.buscar_por_id(usuario_id)
+        usuario.perfil = novo_perfil
+        self.repo.salvar(usuario)
+        return "Perfil atualizado com sucesso"
+
     def tipo_existe(self, nome: str) -> bool:
         return self._normalizar(nome) in self._tipos
 
