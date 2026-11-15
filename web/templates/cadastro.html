@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titulo %}Cadastro{% endblock %}
+{% block conteudo %}
+<div class="centro">
+  <div class="cartao">
+    <h1>Criar conta <span class="f">F01</span></h1>
+    <p class="sub">Toda conta nova é criada com o perfil SOLICITANTE.</p>
+    <form method="post">
+      <div class="campo">
+        <label for="nome">Nome</label>
+        <input id="nome" name="nome" value="{{ form.nome }}">
+      </div>
+      <div class="campo">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="text" value="{{ form.email }}" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password">
+      </div>
+      <button type="submit">Cadastrar</button>
+      <a class="botao secundario" href="{{ url_for('web.login') }}">Voltar ao login</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

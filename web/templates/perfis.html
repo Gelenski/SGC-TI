@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titulo %}Tipos de usuário{% endblock %}
+{% block conteudo %}
+<h1>Tipos de usuário <span class="f">F03</span></h1>
+<p class="sub">Cadastro de novos tipos de perfil. Somente administradores; nomes duplicados são recusados.</p>
+<div class="grade">
+  <div class="cartao">
+    <h2>Novo tipo</h2>
+    <form method="post">
+      <div class="campo">
+        <label for="nome">Nome</label>
+        <input id="nome" name="nome" placeholder="Ex.: SUPERVISOR">
+      </div>
+      <div class="campo">
+        <label for="descricao">Descrição</label>
+        <input id="descricao" name="descricao">
+      </div>
+      <button type="submit">Cadastrar tipo</button>
+    </form>
+  </div>
+  <div class="cartao">
+    <h2>Tipos cadastrados ({{ tipos | length }})</h2>
+    <table>
+      <tr><th>Nome</th><th>Descrição</th></tr>
+      {% for nome, descricao in tipos.items() %}
+      <tr><td><strong>{{ nome }}</strong></td><td class="muted">{{ descricao or '-' }}</td></tr>
+      {% else %}
+      <tr><td colspan="2" class="vazio">Nenhum tipo cadastrado.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

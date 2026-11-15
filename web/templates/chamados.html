@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block titulo %}Chamados{% endblock %}
+
+{% macro tabela(itens, vazio) %}
+<div class="tabela">
+  <table>
+    <tr>
+      <th>ID</th><th>Título</th><th>Categoria</th><th>Solicitante</th>
+      <th>Responsável</th><th>Status</th><th>Ações</th>
+    </tr>
+    {% for c in itens %}
+    <tr>
+      <td class="muted">{{ c.id }}</td>
+      <td><strong>{{ c.titulo }}</strong>{% if c.descricao %}<br><span class="muted">{{ c.descricao }}</span>{% endif %}</td>
+      <td>{{ c.categoria.nome if c.categoria else '-' }}</td>
+      <td>{{ c.solicitante.nome }}</td>
+      <td>{{ c.responsavel.nome if c.responsavel else '-' }}</td>
+      <td><span class="status {{ c.status.value }}">{{ c.status | status_label }}</span></td>
+      <td>
+        {% if (usuario.perfil == Perfil.TECNICO and c.responsavel is none) or demo %}
+        <form class="inline" method="post" action="{{ url_for('web.assumir', chamado_id=c.id) }}">
+          <button class="pequeno" type="submit">Assumir</button><span class="f">F07</span>
+        </form>
+        {% endif %}
+        {% if usuario.perfil == Perfil.ADMIN or demo %}
+        <form class="inline" method="post" action="{{ url_for('web.delegar', chamado_id=c.id) }}" style="margin-top:6px">
+          <select name="tecnico_id">
+            {% for u in candidatos %}
+            <option value="{{ u.id }}">{{ u.nome }}{% if demo %} ({{ u.perfil.value }}){% endif %}</option>
+            {% endfor %}
+          </select>
+          <button class="pequeno" type="submit">Delegar</button><span class="f">F08</span>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="vazio">{{ vazio }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endmacro %}
+
+{% block conteudo %}
+<div class="linha" style="justify-content: space-between; margin-bottom: 16px;">
+  <div>
+    <h1>Chamados <span class="f">F09</span></h1>
+    <p class="sub" style="margin:0">
+      {% if usuario.perfil == Perfil.ADMIN %}Como administrador, você vê todos os chamados.
+      {% elif usuario.perfil == Perfil.TECNICO %}Como técnico, você vê apenas os chamados atribuídos a você.
+      {% else %}Como solicitante, você vê os chamados que abriu.{% endif %}
+    </p>
+  </div>
+  <a class="botao" href="{{ url_for('web.novo_chamado') }}">+ Abrir chamado</a>
+</div>
+
+<div class="cartao">
+  <form method="get" class="linha">
+    <div class="campo">
+      <label for="termo">Buscar</label>
+      <input id="termo" name="termo" value="{{ filtros.termo }}" placeholder="Título, descrição ou categoria">
+    </div>
+    <div class="campo">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        <option value="">Todos</option>
+        {% for s in StatusChamado %}
+        <option value="{{ s.value }}" {{ 'selected' if filtros.status == s.value }}>{{ s | status_label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="campo">
+      <label for="categoria">Categoria</label>
+      <select id="categoria" name="categoria">
+        <option value="">Todas</option>
+        {% for c in categorias %}
+        <option value="{{ c.nome }}" {{ 'selected' if filtros.categoria == c.nome }}>{{ c.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit">Filtrar</button>
+    <a class="botao secundario" href="{{ url_for('web.chamados') }}">Limpar</a>
+  </form>
+</div>
+
+{% if mostrar_fila %}
+<div class="cartao">
+  <h2>Fila de chamados abertos sem responsável <span class="f">F07</span></h2>
+  <p class="muted" style="margin-top:-6px">Chamados disponíveis para um técnico assumir.</p>
+  {{ tabela(fila, "Nenhum chamado aberto aguardando atendimento.") }}
+</div>
+{% endif %}
+
+<div class="cartao">
+  <h2>{{ titulo_lista }} ({{ lista | length }})</h2>
+  {{ tabela(lista, "Nenhum chamado encontrado.") }}
+</div>
+{% endblock %}

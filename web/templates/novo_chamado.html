@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Abrir chamado{% endblock %}
+{% block conteudo %}
+<h1>Abrir chamado <span class="f">F06</span></h1>
+<p class="sub">O chamado é registrado com status inicial ABERTO e vinculado a você como solicitante.</p>
+<div class="cartao" style="max-width: 640px;">
+  <form method="post">
+    <div class="campo">
+      <label for="titulo">Título</label>
+      <input id="titulo" name="titulo" value="{{ form.titulo }}">
+    </div>
+    <div class="campo">
+      <label for="descricao">Descrição</label>
+      <textarea id="descricao" name="descricao">{{ form.descricao }}</textarea>
+    </div>
+    <div class="campo">
+      <label for="categoria">Categoria</label>
+      <select id="categoria" name="categoria">
+        <option value="">Selecione...</option>
+        {% for c in categorias %}
+        <option value="{{ c.nome }}" {{ 'selected' if form.categoria == c.nome }}>{{ c.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit">Abrir chamado</button>
+    <a class="botao secundario" href="{{ url_for('web.chamados') }}">Cancelar</a>
+  </form>
+</div>
+{% endblock %}
