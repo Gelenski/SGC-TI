@@ -1,11 +1,3 @@
-"""
-Dados de exemplo carregados ao iniciar a interface web.
-
-Como os repositórios são em memória, tudo é apagado quando o servidor
-reinicia. Estes dados permitem apresentar o sistema sem cadastrar tudo
-na hora. Os perfis TECNICO e ADMIN são definidos direto no repositório,
-porque o cadastro (F01) sempre cria usuários como SOLICITANTE.
-"""
 from helpdesk.domain.models import Usuario, Perfil
 
 SENHA_PADRAO = "Senha@123"
@@ -26,7 +18,6 @@ CATEGORIAS = [
 ]
 
 CHAMADOS = [
-    # (solicitante, título, descrição, categoria, responsável)
     ("u-ana", "Sem acesso à internet", "Cabo desconectado", "Redes", None),
     ("u-ana", "Mouse não funciona", "Mouse parou de responder", "Hardware", "u-pedro"),
     ("u-mariana", "Erro ao abrir o Excel", "Mensagem de licença expirada", "Software", "u-pedro"),

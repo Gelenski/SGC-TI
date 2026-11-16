@@ -16,7 +16,6 @@ class ChamadoOperacaoService:
     def __init__(self, chamado_repo: ChamadoRepositoryEmMemoria):
         self.chamado_repo = chamado_repo
 
-    # ---------- F07 - Assumir chamado ----------
     def assumir_chamado(self, usuario: Optional[Usuario], chamado_id: str) -> None:
         """F07 - O técnico autenticado assume um chamado e passa a ser o responsável."""
         if not self._tem_perfil(usuario, Perfil.TECNICO):
@@ -25,7 +24,6 @@ class ChamadoOperacaoService:
         chamado = self._buscar_chamado(chamado_id)
         self._atribuir_responsavel(chamado, usuario)
 
-    # ---------- F08 - Delegar chamado ----------
     def delegar_chamado(self, admin: Optional[Usuario], chamado_id: str,
                         tecnico: Optional[Usuario]) -> None:
         """F08 - O administrador delega um chamado para um técnico específico."""
@@ -37,7 +35,6 @@ class ChamadoOperacaoService:
         chamado = self._buscar_chamado(chamado_id)
         self._atribuir_responsavel(chamado, tecnico)
 
-    # ---------- Métodos auxiliares ----------
     @staticmethod
     def _tem_perfil(usuario: Optional[Usuario], perfil: Perfil) -> bool:
         """Também trata usuário nulo (não autenticado) como sem permissão."""

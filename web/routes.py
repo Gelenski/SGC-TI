@@ -1,15 +1,3 @@
-"""
-Rotas da interface web do SGC-TI.
-
-Cada rota só faz três coisas: lê o formulário, chama o service da
-funcionalidade e mostra o resultado. As permissões e validações são
-das próprias classes de serviço; quando elas lançam NegocioException
-(ou uma subclasse), a mensagem aparece na tela como alerta vermelho.
-
-Modo demonstração: liga botões que normalmente ficariam escondidos
-para o perfil logado (ex.: "Assumir" para um solicitante), para mostrar
-na apresentação os cenários de exceção do Gherkin acontecendo.
-"""
 from functools import wraps
 
 from flask import (
@@ -22,7 +10,6 @@ from helpdesk.domain.models import Perfil, StatusChamado
 bp = Blueprint("web", __name__)
 
 
-# ---------------------------------------------------------------- helpers
 def sv():
     return current_app.extensions["sgc"]
 
@@ -48,8 +35,6 @@ def login_obrigatorio(view):
 
 
 def area_admin(view):
-    """Telas de administração: abertas ao ADMIN ou a qualquer um no modo demonstração
-    (aí quem bloqueia é o service, e a mensagem de erro aparece na tela)."""
     @wraps(view)
     @login_obrigatorio
     def wrapper(*args, **kwargs):
@@ -61,7 +46,6 @@ def area_admin(view):
 
 
 def executar(acao, mensagem_sucesso=None):
-    """Executa a ação do service e transforma o resultado em alerta na tela."""
     try:
         retorno = acao()
     except NegocioException as erro:
@@ -96,7 +80,6 @@ def status_label(status):
     }.get(status, str(status))
 
 
-# ------------------------------------------------------- F01 / F02: acesso
 @bp.route("/")
 def inicio():
     return redirect(url_for("web.chamados" if usuario_atual() else "web.login"))
@@ -145,7 +128,6 @@ def alternar_demo():
     return voltar()
 
 
-# ------------------------------------------- F06 / F07 / F08 / F09: chamados
 @bp.route("/chamados")
 @login_obrigatorio
 def chamados():
@@ -162,7 +144,6 @@ def chamados():
     }
     consulta = sv().chamado_consulta
 
-    # F09 - cada perfil vê os chamados conforme seu nível de acesso
     if usuario.perfil == Perfil.ADMIN:
         titulo_lista = "Todos os chamados do sistema"
         lista = consulta.filtrar_chamados(**base)
@@ -173,12 +154,10 @@ def chamados():
         titulo_lista = "Meus chamados"
         lista = consulta.filtrar_chamados(solicitante_id=usuario.id, **base)
 
-    # Fila de chamados abertos sem responsável (para o técnico assumir - F07)
     mostrar_fila = usuario.perfil == Perfil.TECNICO or modo_demo()
     fila = [c for c in consulta.filtrar_chamados(status=StatusChamado.ABERTO)
             if c.responsavel is None] if mostrar_fila else []
 
-    # F08 - no modo demonstração, qualquer usuário aparece na lista (para mostrar o erro)
     candidatos = [u for u in sv().usuario_repo.listar_todos()
                   if modo_demo() or u.perfil == Perfil.TECNICO]
 
@@ -225,7 +204,6 @@ def delegar(chamado_id):
     return voltar()
 
 
-# ------------------------------------------- F03 / F04 / F05: administração
 @bp.route("/admin/usuarios")
 @area_admin
 def usuarios():
@@ -249,7 +227,7 @@ def alterar_perfil(usuario_id):
 @login_obrigatorio
 def excluir_usuario(usuario_id):
     executar(lambda: sv().usuario_gestao.excluir_usuario(usuario_atual(), usuario_id))
-    if usuario_atual() is None:  # o usuário excluiu a própria conta
+    if usuario_atual() is None:
         session.pop("user_id", None)
         return redirect(url_for("web.login"))
     return voltar("web.usuarios")
@@ -267,7 +245,6 @@ def perfis():
     return render_template("perfis.html", tipos=sv().perfil._tipos)
 
 
-# ------------------------------------------------- F10 / F11: categorias
 @bp.route("/admin/categorias", methods=["GET", "POST"])
 @area_admin
 def categorias():

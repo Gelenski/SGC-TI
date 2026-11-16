@@ -36,9 +36,6 @@ def criar_chamado(cid, categoria, solicitante, responsavel=None):
     return Chamado(cid, f"Chamado {cid}", "", categoria, solicitante, status, responsavel)
 
 
-# ---------------------------------------------------------------------------
-# F09 - Listar chamados (docs/specs/f09_listar_chamados.feature)
-# ---------------------------------------------------------------------------
 class TestF09ListarChamados:
 
     def setup_method(self):
@@ -80,9 +77,6 @@ class TestF09ListarChamados:
         assert self.service.filtrar_chamados(categoria="Redes") == []
 
 
-# ---------------------------------------------------------------------------
-# F10 - Adicionar categoria (docs/specs/f10_adicionar_categoria.feature)
-# ---------------------------------------------------------------------------
 class TestF10AdicionarCategoria:
 
     def setup_method(self):
@@ -99,7 +93,6 @@ class TestF10AdicionarCategoria:
         assert categoria.nome == "Hardware"
         assert self.categorias.buscar_por_nome("Hardware") is not None
 
-        # E deve estar disponível para seleção na abertura de chamados
         criacao = ChamadoCriacaoService(self.chamados, self.categorias)
         chamado = criacao.abrir_chamado(criar_usuario("ana"), "Mouse quebrado", "", "Hardware")
         assert chamado.categoria.nome == "Hardware"
@@ -131,9 +124,6 @@ class TestF10AdicionarCategoria:
             self.service.buscar_categoria("999")
 
 
-# ---------------------------------------------------------------------------
-# F11 - Excluir categoria (docs/specs/f11_excluir_categoria.feature)
-# ---------------------------------------------------------------------------
 class TestF11ExcluirCategoria:
 
     def setup_method(self):

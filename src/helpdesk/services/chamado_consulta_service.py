@@ -5,18 +5,15 @@ class ChamadoConsultaService:
     def __init__(self, chamado_repo: ChamadoRepositoryEmMemoria):
         self.chamado_repo = chamado_repo
 
-    # F10 - Listar todos os chamados
     def listar_chamados(self):
         return sorted(
             self.chamado_repo.listar_todos(),
             key=lambda chamado: chamado.id
         )
 
-    # F10 - Buscar chamado pelo ID
     def buscar_chamado(self, chamado_id):
         return self.chamado_repo.buscar_por_id(chamado_id)
 
-    # F11 - Filtrar chamados
     def filtrar_chamados(
         self,
         status=None,

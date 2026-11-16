@@ -13,9 +13,8 @@ MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado"
 class PerfilService:
     def __init__(self, repo: UsuarioRepositoryEmMemoria):
         self.repo = repo
-        self._tipos: Dict[str, str] = {}  # nome do tipo -> descrição
+        self._tipos: Dict[str, str] = {}
 
-    # ---------- F03 - Cadastrar tipo de usuário ----------
     def cadastrar_tipo_usuario(self, executor: Usuario, nome: str, descricao: str) -> None:
         """F03 - Cadastra um novo tipo de perfil. Somente ADMIN pode executar."""
         self._garantir_que_e_admin(executor)
@@ -32,7 +31,6 @@ class PerfilService:
     def listar_tipos(self) -> List[str]:
         return list(self._tipos.keys())
 
-    # ---------- F04 - Alterar perfil de usuário ----------
     def alterar_perfil(self, executor: Usuario, usuario_id: str, novo_perfil: Perfil) -> str:
         """F04 - Altera o perfil de acesso de um usuário. Somente ADMIN pode executar."""
         self._garantir_que_e_admin(executor)
@@ -45,7 +43,6 @@ class PerfilService:
         self.repo.salvar(usuario)
         return MSG_PERFIL_ATUALIZADO
 
-    # ---------- Métodos auxiliares ----------
     @staticmethod
     def _normalizar(nome: str) -> str:
         return (nome or "").strip().upper()
