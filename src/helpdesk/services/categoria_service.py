@@ -20,7 +20,7 @@ class CategoriaService:
             raise NegocioException("Nome da categoria é obrigatório")
 
         if self.categoria_repo.buscar_por_nome(nome):
-            raise NegocioException("Categoria já cadastrada")
+            raise NegocioException("Categoria já existente")
 
         categoria = Categoria(
             id=str(uuid.uuid4())[:8],
@@ -58,7 +58,7 @@ class CategoriaService:
         for chamado in self.chamado_repo.listar_todos():
             if chamado.categoria.id == categoria.id:
                 raise NegocioException(
-                    "Não é possível remover uma categoria vinculada a chamados"
+                    "Não é possível excluir uma categoria associada a chamados existentes"
                 )
 
         self.categoria_repo.remover(categoria.id)
